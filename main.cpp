@@ -1,4 +1,82 @@
 #include <iostream>
+#include <cmath>
+
+int z[10][10];
+int w[10][10];
+
+int n = 10;
+int m = (n-1)/2;
+int p = floor((n+1)/2.0);
+int q = ceil((n+1)/2.0);
+
+void fillW(){
+    // first formula for w
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j){
+            if (j == i){
+                w[j][i] = 1;
+            }
+            else if (j > i && j < (n-i-1)){
+                w[j][i] = INT_MIN;
+            }
+            else{
+                w[j][i] = 0;
+            }
+        }
+    }
+
+    // filling for the second formula
+    for (int i = p - 1; i < q; ++i){
+        for (int j = 0; j < n; ++j){
+            if (j == i){
+                w[j][i] = 1;
+            }
+            else{
+                w[j][i] = 0;
+            }
+        }
+    }
+
+    // filling for the third
+    for (int i = q; i < n; ++i) {
+        for (int j = 0; j < n; ++j){
+            if (j == i){
+                w[j][i] = 1;
+            }
+            else if (j >= (n-i) && j < i){
+                w[j][i] = INT_MIN;
+            }
+            else{
+                w[j][i] = 0;
+            }
+        }
+    }
+}
+
+void fillZ(){
+    for (int i = 0; i < p; ++i){
+        for (int j = 0; j < n; ++j){
+            if (j >= i && j < (n-i)){
+                z[i][j] = INT_MIN;
+            }
+            else{
+                z[i][j] = 0;
+            }
+        }
+    }
+
+    for (int i = p; i < n; ++i){
+        for (int j = 0; j < n; ++j){
+            if (j <= i && j >= (n-i-1)){
+                z[i][j] = INT_MIN;
+            }
+            else{
+                z[i][j] = 0;
+            }
+        }
+    }
+}
+
 
 int main() {
     int a[10][10] = {
@@ -16,72 +94,15 @@ int main() {
 
     int b[10] = {159, 830, 6487, 5516, 6223, 7278, 5295, 6196, 1207, 124};
     int x[10];
-    int z[10][10];
-    int w[10][10];
-
-    int n = 10;
-    int m = (n-1)/2;
-    int p = (n+1)/2;
-    int q = (n+1)/2 + 1;
 
     // fill w [a][b], where a - row, b - column
     // w is filled by rows (i.e. first rows of column 1, then 2 etc.)
+    fillW();
 
-    // first formula for w
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j){
-            if (j == i){
-                w[j][i] = 1;
-            }
-            else if (j > i && j < (n-i-1)){
-                w[j][i] = 2;
-            }
-            else{
-                w[j][i] = 0;
-            }
-        }
-    }
+    // fill z
+    fillZ();
 
-    // filling for the second formula
-    for (int j = 0; j < n; ++j){
-        if (j == p - 1){
-            w[j][p -1] = 1;
-        }
-        else{
-            w[j][p -1] = 0;
-        }
-    }
-    for (int j = 0; j < n; ++j){
-        if (j == q - 1){
-            w[j][q -1] = 1;
-            // std::cout << p << std::endl;
-        }
-        else{
-            w[j][q -1] = 0;
-        }
-    }
-
-    // filling for the third
-    for (int i = q; i < n; ++i) {
-        // w[n-i][i-1] = 1;
-        //std::cout << i << std::endl;
-        for (int j = 0; j < n; ++j){
-            if (j == i){
-                //std::cout << "diagonal" << std::endl;
-                w[j][i] = 1;
-            }
-            else if (j >= (n-i) && j < i){
-                //std::cout << (n-i) << i-1 << std::endl;
-                w[j][i] = 2;
-            }
-            else{
-                w[j][i] = 0;
-            }
-        }
-    }
-
-
-    for (const auto& row : w) {
+    for (const auto& row : z) {
         for (double val : row) {
             std::cout << val << " ";
         }
