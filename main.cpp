@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cmath>
+#include <thread>
+
+using namespace std;
 
 int z[10][10];
 int w[10][10];
@@ -17,7 +20,7 @@ void fillW(){
                 w[j][i] = 1;
             }
             else if (j > i && j < (n-i-1)){
-                w[j][i] = INT_MIN;
+                w[j][i] = 2;
             }
             else{
                 w[j][i] = 0;
@@ -44,7 +47,7 @@ void fillW(){
                 w[j][i] = 1;
             }
             else if (j >= (n-i) && j < i){
-                w[j][i] = INT_MIN;
+                w[j][i] = 2;
             }
             else{
                 w[j][i] = 0;
@@ -57,7 +60,7 @@ void fillZ(){
     for (int i = 0; i < p; ++i){
         for (int j = 0; j < n; ++j){
             if (j >= i && j < (n-i)){
-                z[i][j] = INT_MIN;
+                z[i][j] = 2;
             }
             else{
                 z[i][j] = 0;
@@ -68,7 +71,7 @@ void fillZ(){
     for (int i = p; i < n; ++i){
         for (int j = 0; j < n; ++j){
             if (j <= i && j >= (n-i-1)){
-                z[i][j] = INT_MIN;
+                z[i][j] = 2;
             }
             else{
                 z[i][j] = 0;
@@ -97,10 +100,11 @@ int main() {
 
     // fill w [a][b], where a - row, b - column
     // w is filled by rows (i.e. first rows of column 1, then 2 etc.)
-    fillW();
+    thread threadZ (fillZ);
+    thread threadW (fillW);
 
-    // fill z
-    fillZ();
+    threadZ.join();
+    threadW.join();
 
     for (const auto& row : z) {
         for (double val : row) {
