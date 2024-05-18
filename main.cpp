@@ -124,26 +124,26 @@ int main() {
 
     start++; end--;
 
-    for (int i = 0; i < n; ++i){
-        for (int row = start; row < end; row++){
-            // int determ = z[k][i] * z[9][9] - z[k][9] * z[9][i];
-            int determ = z[k][i] * z[9][9] - z[k][9] * z[9][i];
-            if (determ == 0) {
-                continue;
-            }
-            // cout << determ << endl;
-            // w[row][i] * z[i][k] + w[row][9] * z[9][k] = a[row][k];
-            // w[row][i] * z[i][9] + w[row][9] * z[9][9] = a[row][9];
+    int i = 0; // (i = k)
+    for (int row = start; row <= end; row++){
 
-            int deti = a[row][k] * z[9][9] - a[row][9] * z[9][k];
-            // cout << deti << endl;
-            //int det9 = z[k][9] * a[row][k] - a[row][9] * z[k][i];
-            int det9 = a[row][9] * z[k][i] - z[k][9] * a[row][k];
-            // cout << det9 << endl;
-
-            w[row][i] = deti / determ;
-            w[row][9] = det9 / determ;
+        int determ = z[k][i] * z[9][9] - z[k][9] * z[9][i];
+        cout << row << "determ - " << determ << endl;
+        if (determ == 0) {
+            continue;
         }
+
+        // w[row][i] * z[i][k] + w[row][9] * z[9][k] = a[row][k];
+        // w[row][i] * z[i][9] + w[row][9] * z[9][9] = a[row][9];
+
+        int deti = a[row][k] * z[9][9] - a[row][9] * z[9][k];
+        cout << row << "deti - " << deti << endl;
+
+        int det9 = a[row][9] * z[k][i] - z[k][9] * a[row][k];
+        cout << row << "det9 - " << det9 << endl;
+
+        w[row][i] = deti / determ;
+        w[row][9] = det9 / determ;
     }
 
     // Вивід результатів
