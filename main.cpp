@@ -76,6 +76,22 @@ void fillZ() {
     }
 }
 
+void calculateZ(int& start, int& end, vector<vector<int>>& a){
+    for (int i = start; i <= end; ++i){
+        z[start][i] = a[start][i];
+        z[end][i] = a[end][i];
+
+        for (int p = start; p > 0; --p){
+
+            z[start][i] -= w[start][p - 1] * z[p - 1][i];
+            z[start][i] -= w[start][n-p] * z[n - p][i];
+
+            z[end][i] -= w[end][p - 1] * z[p - 1][i];
+            z[end][i] -= w[end][n-p] * z[n - p][i];
+        }
+    }
+}
+
 int main() {
     vector<vector<int>> a = {
             {2, 1, 3, 6, 3, 3, 2, 2, 1, 5},
@@ -100,35 +116,20 @@ int main() {
     threadZ.join();
     threadW.join();
 
+    //// round 1
     int k = 0;
     int start = k;
     int end = n - (k + 1);
 
-    for (int i = 0; i < n; ++i){
-        z[start][i] = a[start][i];
-        z[end][i] = a[end][i];
-    }
-
-//    // Вивід результатів
-//    cout << "Matrix Z:" << endl;
-//    for (int i = 0; i < n; ++i) {
-//        for (int j = 0; j < n; ++j) {
-//            if (z[i][j] == INT_MIN) {
-//                cout << "INF ";
-//            } else {
-//                cout << z[i][j] << " ";
-//            }
-//        }
-//        cout << endl;
-//    }
+    calculateZ(start, end, a);
 
     start++; end--;
 
-    int i = 0; // (i = k)
+    int i = k; // (i = k)
     for (int row = start; row <= end; row++){
 
         int determ = z[k][i] * z[9][9] - z[k][9] * z[9][i];
-        cout << row << "determ - " << determ << endl;
+        // cout << row << "determ - " << determ << endl;
         if (determ == 0) {
             continue;
         }
@@ -137,27 +138,49 @@ int main() {
         // w[row][i] * z[i][9] + w[row][9] * z[9][9] = a[row][9];
 
         int deti = a[row][k] * z[9][9] - a[row][9] * z[9][k];
-        cout << row << "deti - " << deti << endl;
+        // cout << row << "deti - " << deti << endl;
 
         int det9 = a[row][9] * z[k][i] - z[k][9] * a[row][k];
-        cout << row << "det9 - " << det9 << endl;
+        // cout << row << "det9 - " << det9 << endl;
 
         w[row][i] = deti / determ;
         w[row][9] = det9 / determ;
     }
 
+    //// round 2
+    k++;
+
+    start = k;
+    end = n - (k + 1);
+
+    calculateZ(start, end, a);
+
     // Вивід результатів
-    cout << "Matrix W:" << endl;
+    cout << "Matrix Z:" << endl;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            if (w[i][j] == INT_MIN) {
+            if (z[i][j] == INT_MIN) {
                 cout << "INF ";
             } else {
-                cout << w[i][j] << " ";
+                cout << z[i][j] << " ";
             }
         }
         cout << endl;
     }
+
+
+//    // Вивід результатів
+//    cout << "Matrix W:" << endl;
+//    for (int i = 0; i < n; ++i) {
+//        for (int j = 0; j < n; ++j) {
+//            if (w[i][j] == INT_MIN) {
+//                cout << "INF ";
+//            } else {
+//                cout << w[i][j] << " ";
+//            }
+//        }
+//        cout << endl;
+//    }
 
     return 0;
 }
