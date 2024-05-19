@@ -11,6 +11,21 @@ const int n = 10;
 vector<vector<int>> z(n, vector<int>(n, INT_MIN));
 vector<vector<int>> w(n, vector<int>(n, INT_MIN));
 
+vector<vector<int>> a = {
+        {2, 1, 3, 6, 3, 3, 2, 2, 1, 5},
+        {10, 10, 17, 33, 18, 15, 15, 13, 12, 12},
+        {12, 127, 210, 286, 227, 84, 155, 103, 81, 17},
+        {14, 66, 223, 191, 220, 153, 121, 66, 36, 22},
+        {18, 61, 233, 195, 269, 167, 153, 75, 44, 19},
+        {21, 66, 266, 281, 287, 193, 178, 87, 52, 20},
+        {10, 66, 210, 225, 208, 127, 115, 67, 40, 12},
+        {8, 125, 206, 273, 223, 104, 149, 91, 72, 7},
+        {16, 14, 23, 52, 24, 33, 21, 16, 17, 14},
+        {3, 1, 1, 5, 1, 4, 2, 2, 3, 1}
+};
+
+vector<int> b = {159, 830, 6487, 5516, 6223, 7278, 5295, 6196, 1207, 124};
+
 int m = (n - 1) / 2;
 int p = floor((n + 1) / 2.0);
 int q = ceil((n + 1) / 2.0);
@@ -76,37 +91,50 @@ void fillZ() {
     }
 }
 
-void calculateZ(int& start, int& end, vector<vector<int>>& a){
+void calculateZ(int& start, int& end){
     for (int i = start; i <= end; ++i){
         z[start][i] = a[start][i];
         z[end][i] = a[end][i];
 
-        for (int p = start; p > 0; --p){
+        for (int j = start; j > 0; --j){
 
-            z[start][i] -= w[start][p - 1] * z[p - 1][i];
-            z[start][i] -= w[start][n-p] * z[n - p][i];
+            z[start][i] -= w[start][j - 1] * z[j - 1][i];
+            z[start][i] -= w[start][n-j] * z[n - j][i];
 
-            z[end][i] -= w[end][p - 1] * z[p - 1][i];
-            z[end][i] -= w[end][n-p] * z[n - p][i];
+            z[end][i] -= w[end][j - 1] * z[j - 1][i];
+            z[end][i] -= w[end][n-j] * z[n - j][i];
         }
     }
 }
 
-int main() {
-    vector<vector<int>> a = {
-            {2, 1, 3, 6, 3, 3, 2, 2, 1, 5},
-            {10, 10, 17, 33, 18, 15, 15, 13, 12, 12},
-            {12, 127, 210, 286, 227, 84, 155, 103, 81, 17},
-            {14, 66, 223, 191, 220, 153, 121, 66, 36, 22},
-            {18, 61, 233, 195, 269, 167, 153, 75, 44, 19},
-            {21, 66, 266, 281, 287, 193, 178, 87, 52, 20},
-            {10, 66, 210, 225, 208, 127, 115, 67, 40, 12},
-            {8, 125, 206, 273, 223, 104, 149, 91, 72, 7},
-            {16, 14, 23, 52, 24, 33, 21, 16, 17, 14},
-            {3, 1, 1, 5, 1, 4, 2, 2, 3, 1}
-    };
+void calculateW(int& start, int& end){
+    for (int row = start + 1; row < end; row++){
 
-    vector<int> b = {159, 830, 6487, 5516, 6223, 7278, 5295, 6196, 1207, 124};
+        int a_start = a[row][start];
+        int a_end = a[row][end];
+
+        for (int i = start; i > 0; --i){
+            a_start -= w[row][i - 1] * z[i - 1][start];
+            a_start -= w[row][n-i] * z[n-i][start];
+
+            a_end -= w[row][i - 1] * z[i - 1][end];
+            a_end -= w[row][n-i] * z[n-i][end];
+        }
+
+        // w[row][start] * z[start][start] + w[row][end] * z[end][start] = a_start;
+        // w[row][start] * z[start][end] + w[row][end] * z[end][end] = a_end;
+
+        int determ = z[end][end] * z[start][start] - z[start][end] * z[end][start];
+
+        int det1 = z[end][end] * a_start - z[end][start] * a_end;
+        int det2 = a_end * z[start][start] - a_start * z[start][end];
+
+        w[row][start] = det1/determ;
+        w[row][end] = det2/determ;
+
+    }
+}
+int main() {
 
     // fill w [a][b], where a - row, b - column
     // w is filled by rows (i.e. first rows of column 1, then 2 etc.)
@@ -116,71 +144,32 @@ int main() {
     threadZ.join();
     threadW.join();
 
-    //// round 1
-    int k = 0;
-    int start = k;
-    int end = n - (k + 1);
+    for (int k = 0; k <= m; ++k){
+        int start = k;
+        int end = n - (k + 1);
 
-    calculateZ(start, end, a);
-
-    start++; end--;
-
-    int i = k; // (i = k)
-    for (int row = start; row <= end; row++){
-
-        int determ = z[k][i] * z[9][9] - z[k][9] * z[9][i];
-        // cout << row << "determ - " << determ << endl;
-        if (determ == 0) {
-            continue;
+        calculateZ(start, end);
+        if (k != m){
+            calculateW(start, end);
         }
-
-        // w[row][i] * z[i][k] + w[row][9] * z[9][k] = a[row][k];
-        // w[row][i] * z[i][9] + w[row][9] * z[9][9] = a[row][9];
-
-        int deti = a[row][k] * z[9][9] - a[row][9] * z[9][k];
-        // cout << row << "deti - " << deti << endl;
-
-        int det9 = a[row][9] * z[k][i] - z[k][9] * a[row][k];
-        // cout << row << "det9 - " << det9 << endl;
-
-        w[row][i] = deti / determ;
-        w[row][9] = det9 / determ;
     }
 
-    //// round 2
-    k++;
-
-    start = k;
-    end = n - (k + 1);
-
-    calculateZ(start, end, a);
-
     // Вивід результатів
-    cout << "Matrix Z:" << endl;
+    cout << "Matrix W:" << endl;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            if (z[i][j] == INT_MIN) {
-                cout << "INF ";
-            } else {
-                cout << z[i][j] << " ";
-            }
+            cout << w[i][j] << " ";
         }
         cout << endl;
     }
 
-
-//    // Вивід результатів
-//    cout << "Matrix W:" << endl;
-//    for (int i = 0; i < n; ++i) {
-//        for (int j = 0; j < n; ++j) {
-//            if (w[i][j] == INT_MIN) {
-//                cout << "INF ";
-//            } else {
-//                cout << w[i][j] << " ";
-//            }
-//        }
-//        cout << endl;
-//    }
+    cout << "Matrix Z:" << endl;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cout << z[i][j] << " ";
+        }
+        cout << endl;
+    }
 
     return 0;
 }
