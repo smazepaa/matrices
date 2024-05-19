@@ -3,7 +3,9 @@
 #include <thread>
 #include <limits>
 #include <vector>
-
+//#include <Eigen/Dense>
+//
+//using namespace Eigen;
 using namespace std;
 
 const int n = 10;
@@ -25,6 +27,7 @@ vector<vector<int>> a = {
 };
 
 vector<int> b = {159, 830, 6487, 5516, 6223, 7278, 5295, 6196, 1207, 124};
+vector<int> y (n, INT_MIN);
 
 int m = (n - 1) / 2;
 int p = floor((n + 1) / 2.0);
@@ -134,6 +137,30 @@ void calculateW(int& start, int& end){
 
     }
 }
+
+void calculateY(){
+    // iterate over each pair (y1 and y10, y2 and y9, etc.)
+    for (int i = 0; i < n / 2; ++i) {
+        int j = n - i - 1;
+        y[i] = b[i];
+        y[j] = b[j];
+
+        // the first from the pair
+        for (int k = 0; k < n; ++k) {
+            if (k != i) {
+                y[i] -= w[i][k] * y[k];
+            }
+        }
+
+        // second
+        for (int k = 0; k < n; ++k) {
+            if (k != j) {
+                y[j] -= w[j][k] * y[k];
+            }
+        }
+    }
+}
+
 int main() {
 
     // fill w [a][b], where a - row, b - column
@@ -154,21 +181,29 @@ int main() {
         }
     }
 
-    // Вивід результатів
-    cout << "Matrix W:" << endl;
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cout << w[i][j] << " ";
-        }
-        cout << endl;
-    }
+//    // Вивід результатів
+//    cout << "Matrix W:" << endl;
+//    for (int i = 0; i < n; ++i) {
+//        for (int j = 0; j < n; ++j) {
+//            cout << w[i][j] << " ";
+//        }
+//        cout << endl;
+//    }
+//
+//    cout << "Matrix Z:" << endl;
+//    for (int i = 0; i < n; ++i) {
+//        for (int j = 0; j < n; ++j) {
+//            cout << z[i][j] << " ";
+//        }
+//        cout << endl;
+//    }
 
-    cout << "Matrix Z:" << endl;
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cout << z[i][j] << " ";
-        }
-        cout << endl;
+    //// calculating y
+    calculateY();
+
+    cout << "Matrix Y:" << endl;
+    for (int i = 0; i < n; ++i){
+        cout << y[i] << endl;
     }
 
     return 0;
