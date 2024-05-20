@@ -28,6 +28,7 @@ vector<vector<int>> a = {
 
 vector<int> b = {159, 830, 6487, 5516, 6223, 7278, 5295, 6196, 1207, 124};
 vector<int> y (n, INT_MIN);
+vector<int> x (n, 0);
 
 int m = (n - 1) / 2;
 int p = floor((n + 1) / 2.0);
@@ -161,6 +162,34 @@ void calculateY(){
     }
 }
 
+void calculateX(){
+
+    // iterate over each pair (x5 and x6, x4 and x7, etc.)
+    for (int k = 0; k < n / 2; ++k) {
+        int i = n / 2 - (k + 1);
+        int j = n / 2 + k;
+
+        int sum_i = y[i];
+        int sum_j = y[j];
+
+        for (int l = i; l < j; l++){
+            sum_i -= z[i][l] * x[l];
+            sum_j -= z[j][n-l-1] * x[n-l-1];
+        }
+
+        // z[i][i] * x[i] + z[i][j] * x[j] = sum_i;
+        // z[j][i] * x[i] + z[j][j] * x[j] = sum_j;
+
+        int determ = z[j][j] * z[i][i] - z[j][i] * z[i][j];
+
+        int det1 = z[j][j] * sum_i - z[i][j] * sum_j;
+        int det2 = z[i][i] * sum_j - z[j][i] * sum_i;
+
+        x[i] = det1/determ;
+        x[j] = det2/determ;
+    }
+}
+
 int main() {
 
     // fill w [a][b], where a - row, b - column
@@ -201,9 +230,17 @@ int main() {
     //// calculating y
     calculateY();
 
-    cout << "Matrix Y:" << endl;
+//    cout << "Matrix Y:" << endl;
+//    for (int i = 0; i < n; ++i){
+//        cout << y[i] << endl;
+//    }
+
+    //// calculating x
+    calculateX();
+
+    cout << "Matrix X:" << endl;
     for (int i = 0; i < n; ++i){
-        cout << y[i] << endl;
+        cout << x[i] << endl;
     }
 
     return 0;
