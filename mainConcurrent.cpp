@@ -95,7 +95,7 @@ void fillZ() {
     }
 }
 
-void calculateZ(int start, int end){
+void calculateZ(int& start, int& end){
     for (int i = start; i <= end; ++i){
         z[start][i] = a[start][i];
         z[end][i] = a[end][i];
@@ -111,7 +111,7 @@ void calculateZ(int start, int end){
     }
 }
 
-void calculateW(int start, int end){
+void calculateW(int& start, int& end){
     for (int row = start + 1; row < end; row++){
 
         int a_start = a[row][start];
@@ -191,7 +191,7 @@ void calculateX(){
 
 int main() {
 
-    std::ofstream outfile("execution_times_parallel.txt");
+    std::ofstream outfile("execution_times.txt");
     if (!outfile.is_open()) {
         std::cerr << "Failed to open the file for writing." << std::endl;
         return 1;
@@ -211,16 +211,13 @@ int main() {
 
     for (int run = 1; run <= 10; ++run) {
 
-        for (int k = 0; k <= m; ++k){
+        for (int k = 0; k <= m; ++k) {
             int start = k;
             int end = n - (k + 1);
 
-            thread threadCalculateZ(calculateZ, start, end);
-            threadCalculateZ.join();
-
-            if (k != m){
-                thread threadCalculateW(calculateW, start, end);
-                threadCalculateW.join();
+            calculateZ(start, end);
+            if (k != m) {
+                calculateW(start, end);
             }
         }
 

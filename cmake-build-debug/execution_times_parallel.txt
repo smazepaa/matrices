@@ -1,0 +1,11 @@
+Run 1: 0.0026757 seconds
+Run 2: 0.0064039 seconds
+Run 3: 0.0081757 seconds
+Run 4: 0.0095335 seconds
+Run 5: 0.0111083 seconds
+Run 6: 0.012606 seconds
+Run 7: 0.0138002 seconds
+Run 8: 0.0149371 seconds
+Run 9: 0.016276 seconds
+Run 10: 0.0176377 seconds
+Average execution time: 0.0113154 seconds
