@@ -138,6 +138,11 @@ void Calculator::calculateW(){
 
         double determ = z[end][end] * z[start][start] - z[start][end] * z[end][start];
 
+        if (determ == 0) {
+            std::cerr << "Determinant is zero, cannot solve the system." << std::endl;
+            return;
+        }
+
         double det1 = z[end][end] * a_start - z[end][start] * a_end;
         double det2 = a_end * z[start][start] - a_start * z[start][end];
 
@@ -182,6 +187,11 @@ void Calculator::calculateX() {
 
         double determ = z[j][j] * z[i][i] - z[j][i] * z[i][j];
 
+        if (determ == 0) {
+            std::cerr << "Determinant is zero, cannot solve the system." << std::endl;
+            return;
+        }
+
         double det1 = z[j][j] * sum_i - z[i][j] * sum_j;
         double det2 = z[i][i] * sum_j - z[j][i] * sum_i;
 
@@ -196,12 +206,12 @@ std::vector<double> Calculator::solveConcurrently() {
         end = n - (k + 1);
 
         std::thread zThread(&Calculator::calculateZ, this);
+        zThread.join();
+
         if (k != m) {
             std::thread wThread(&Calculator::calculateW, this);
             wThread.join();
         }
-        zThread.join();
-
     }
 
     calculateY();
