@@ -1,10 +1,15 @@
 #include "Calculator.h"
 #include <fstream>
-#include <thread>
 #include <limits>
+#include <iostream>
+#include <thread>
+#include <cmath>
+#include <vector>
+#include <mutex>
+#include <string>
 
-Calculator::Calculator(int size, const std::string& filename) : n(size) {
-    p = floor((n + 1) / 2.0);
+Calculator::Calculator(int size, const std::string& filename) : n(size), start(0), end(0) {
+    p = std::floor((n + 1) / 2.0);
     m = (n - 1) / 2;
 
     z = std::vector<std::vector<double>>(n, std::vector<double>(n, std::numeric_limits<double>::lowest()));
@@ -21,7 +26,6 @@ Calculator::Calculator(int size, const std::string& filename) : n(size) {
 
     threadZ.join();
     threadW.join();
-
 }
 
 void Calculator::fillZ() {
@@ -104,7 +108,6 @@ void Calculator::readMatrices(const std::string& filename) {
 }
 
 void Calculator::calculateZ(){
-    std::unique_lock<std::mutex> lock(mtx);
     for (int i = start; i <= end; ++i){
         z[start][i] = a[start][i];
         z[end][i] = a[end][i];
@@ -117,14 +120,18 @@ void Calculator::calculateZ(){
             z[end][i] -= w[end][n-j] * z[n - j][i];
         }
     }
+}
+
+void Calculator::calculateZconc() {
+    std::unique_lock<std::mutex> lock(mtx);
+    calculateZ();
+    std::cout << "calculated z" << std::endl;
     z_ready = true;
+    std::cout << z_ready << std::endl;
     cv.notify_one();  // Notify that z is ready
 }
 
 void Calculator::calculateW(){
-    std::unique_lock<std::mutex> lock(mtx);
-    cv.wait(lock, [this] { return z_ready; }); // Wait until z is ready
-
     for (int row = start + 1; row < end; row++){
         double a_start = a[row][start];
         double a_end = a[row][end];
@@ -149,6 +156,13 @@ void Calculator::calculateW(){
         w[row][start] = det1/determ;
         w[row][end] = det2/determ;
     }
+}
+
+void Calculator::calculateWconc() {
+    std::unique_lock<std::mutex> lock(mtx);
+    cv.wait(lock, [this] { return z_ready; }); // Wait until z is ready
+    calculateW();
+    std::cout << "calculated w" << std::endl;
     z_ready = false;  // Reset the flag
 }
 
@@ -201,18 +215,25 @@ void Calculator::calculateX() {
 }
 
 std::vector<double> Calculator::solveConcurrently() {
-    for (int k = 0; k <= m; ++k) {
-        start = k;
-        end = n - (k + 1);
+    std::thread zThread(&Calculator::calculateZconc, this);
+    std::thread wThread(&Calculator::calculateWconc, this);
 
-        std::thread zThread(&Calculator::calculateZ, this);
-        zThread.join();
+    for (int k = 0; k <= m; ++k) {
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            start = k;
+            end = n - (k + 1);
+            z_ready = false;
+        }
+        cv.notify_one(); // Notify calculateZ thread
 
         if (k != m) {
-            std::thread wThread(&Calculator::calculateW, this);
-            wThread.join();
+            cv.notify_one(); // Notify calculateW thread
         }
     }
+
+    zThread.join();
+    wThread.join();
 
     calculateY();
     calculateX();

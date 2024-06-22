@@ -29,4 +29,6 @@ private:
     void calculateW();
     void calculateY();
     void calculateX();
+    void calculateZconc();
+    void calculateWconc();
 };
