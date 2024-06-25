@@ -21,6 +21,7 @@ private:
     std::mutex mtx;
     std::condition_variable cv;
     bool z_ready = false;
+    bool w_ready = false;
 
     void fillZ();
     void fillW();
